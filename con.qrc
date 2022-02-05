@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="con">
+    <file>resize-connect(140x85).png</file>
+    <file>resize-connect(140x92).png</file>
+    <file>connect.png</file>
+    <file>resize-connect(134x76).png</file>
+  </qresource>
+</RCC>
