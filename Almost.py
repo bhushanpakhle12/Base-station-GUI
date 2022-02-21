@@ -16,7 +16,12 @@ import sys
 import threading
 from PyQt5.QtWidgets import *
 
+
 class Ui_MainWindow(QMainWindow):
+    x = ''
+    # y = serial.Serial('COM8', 9600)
+    ser = serial.Serial("COM11", 9600, timeout=1)
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1958, 1032)
@@ -77,11 +82,11 @@ class Ui_MainWindow(QMainWindow):
         self.Timer_text.setStyleSheet("\n"
 "color: rgb(255, 255, 255);")
         self.Timer_text.setObjectName("Timer_text")
-        self.acce_text = QtWidgets.QLabel(self.centralwidget)
-        self.acce_text.setGeometry(QtCore.QRect(440, 860, 151, 51))
-        self.acce_text.setStyleSheet("\n"
-"color: rgb(255, 255, 255);")
-        self.acce_text.setObjectName("acce_text")
+#         self.acce_text = QtWidgets.QLabel(self.centralwidget)
+#         self.acce_text.setGeometry(QtCore.QRect(440, 860, 151, 51))
+#         self.acce_text.setStyleSheet("\n"
+# "color: rgb(255, 255, 255);")
+#         self.acce_text.setObjectName("acce_text")
         self.calibrate_button = QtWidgets.QPushButton(self.centralwidget)
         self.calibrate_button.setGeometry(QtCore.QRect(1070, 700, 231, 81))
         self.calibrate_button.setStyleSheet("QPushButton{\n"
@@ -205,6 +210,8 @@ class Ui_MainWindow(QMainWindow):
 "    background-color: rgb(85, 255, 255);}")
         self.air_speed_label.setText("")
         self.air_speed_label.setObjectName("air_speed_label")
+        self.air_speed_label.setFont(QFont('Arial', 25))
+
         self.timer_label = QtWidgets.QLabel(self.centralwidget)
         self.timer_label.setGeometry(QtCore.QRect(690, 670, 191, 51))
         self.timer_label.setStyleSheet("QLabel{\n"
@@ -217,13 +224,13 @@ class Ui_MainWindow(QMainWindow):
 
         self.timer_label.setObjectName("timer_label")
         self.acce_label = QtWidgets.QLabel(self.centralwidget)
-        self.acce_label.setGeometry(QtCore.QRect(690, 860, 191, 51))
-        self.acce_label.setStyleSheet("QLabel{\n"
-"    border :2px solid rgb(0, 255, 255);\n"
-"    border-radius:20px;\n"
-"    background-color: rgb(85, 255, 255);}")
-        self.acce_label.setText("")
-        self.acce_label.setObjectName("acce_label")
+#         self.acce_label.setGeometry(QtCore.QRect(690, 860, 191, 51))
+#         self.acce_label.setStyleSheet("QLabel{\n"
+# "    border :2px solid rgb(0, 255, 255);\n"
+# "    border-radius:20px;\n"
+# "    background-color: rgb(85, 255, 255);}")
+#         self.acce_label.setText("")
+#         self.acce_label.setObjectName("acce_label")
         self.altitude_meter_PADA_static = QtWidgets.QLabel(self.centralwidget)
         self.altitude_meter_PADA_static.setGeometry(QtCore.QRect(1070, 580, 231, 71))
         self.altitude_meter_PADA_static.setStyleSheet("QLabel{\n"
@@ -285,6 +292,8 @@ class Ui_MainWindow(QMainWindow):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
+        self.PADA_button.pressed.connect(self.pada)
+
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -298,7 +307,7 @@ class Ui_MainWindow(QMainWindow):
         self.Yaw_text.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:18pt;\">YAW</span></p></body></html>"))
         self.Air_speed_text.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:18pt;\">AIR SPEED</span></p></body></html>"))
         self.Timer_text.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:18pt;\">TIMER</span></p></body></html>"))
-        self.acce_text.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:18pt;\">ACCE.</span></p></body></html>"))
+        # self.acce_text.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:18pt;\">ACCE.</span></p></body></html>"))
         self.calibrate_button.setText(_translate("MainWindow", "CALIBRATE"))
         self.PADA_button.setText(_translate("MainWindow", "PADA"))
         '''self.comboBox.setItemText(0, _translate("MainWindow", "New Item"))
@@ -373,66 +382,83 @@ class Ui_MainWindow(QMainWindow):
 
     def read_com(self, ser):
         # for i in range(0,10):
+        ser.setDTR(False)
+        ser.setRTS(False)
+
+        # ser.open()
+        calibrateDone=False
+        diff=0
+
         while True:
-            # print(type(ser.read()))
-            # print(ser.read().decode().strip())
+            # b=str(ser.readline().decode('utf-16'))
+            # print(b)
+            sens = ser.readline()
+            sens=str(sens)
 
-            # time.sleep(3000)
-            # QtWidgets.QMainWindow().show()
-            # print(str(str(ser.readline()).split(':')[1]).split('\\')[0])
+            sens=sens[2:len(sens)-5]
+            sens=sens.split(" ")
+            if len(sens)==6:
+                print(sens)
 
-            # #serial.inWaiting()
-            # print(str(str(str(ser.readline())).split('\\')[0]).split("'")[1])
-            # prii=[str(str(str(str(ser.readline())).split('\\')[0]).split("'")[1]).split(',')]
-            # print(str(str(str(ser.readline()).split(":")[1]).split("\\")[0]).split(','))
-            # print(str(str(str(str(ser.readline())).split('\\')[0]).split("'")[1]).split(':')[1])
-            # prii = [str(str(str(str(ser.readline())).split('\\')[0]).split("'")[1]).split(':')[1]]
-            # # # # rr=prii.split(",")
-            # # # self.roll.setText(self.str(30))
-            # print(prii)
+                roll=sens[0]
+                pitch=sens[1]
+                yaw=sens[2]
+                altitude=sens[3]
+                air_speed=sens[4]
+                if calibrateDone==False:
+                    diff=float(altitude)
+                    calibrationDone=True
 
-            # prii = [str(str(str(str(str(ser.readline())).split('\\')[0]).split("'")[1]).split(':')[1])] # almost
-            # prii =str(prii[0]).split(",") #almost
-            # prii=[str(ser.readline())]
-            print(ser.readline())
-            # print(str(str(str(ser.readline()).split("'")[1]).split("\\")[0]).split(" "))
-            preo = [str(str(str(ser.readline()).split(":")[1]).split("\\")[0]).split(" ")]
-            # pr = str(ser.readline().split(":"))
-            # print(pr)
-            print(preo)
-            if (len(preo[0]) > 1):
-                self.roll_label.setText(preo[0][1].split(",")[0])
-                self.pitch_label.setText(preo[0][2].split(",")[0])
-                self.yaw_label.setText(preo[0][3])
-                # self.lineEdit_8.setText(preo[0][3])
-                # self.a_speed.setText(preo[0][4])
-            else:
-                print(preo[0])
+                altitude=str(float(altitude)-diff)
+                print(altitude)
+                self.roll_label.setText(roll)
+                self.pitch_label.setText(pitch)
+                self.yaw_label.setText(yaw)
+                self.air_speed_label.setText(air_speed)
+                # self.lineEdit_8.setText(altitude)
+                # self.a_speed.setText(speed)
+
+            # pad = ser.write('F')
+            # print(pad)
+
+            # preo = [str(str(str(ser.readline()).split(":")[1]).split("\\")[0]).split(" ")]
+            #
+            # print(preo)
+            # if (len(preo[0]) > 1):
+            #     self.roll_label.setText(preo[0][1].split(",")[0])
+            #     self.pitch_label.setText(preo[0][2].split(",")[0])
+            #     self.yaw_label.setText(preo[0][3])
+            #     # self.lineEdit_8.setText(preo[0][3])
+            #     # self.a_speed.setText(preo[0][4])
+            # else:
+            #     print(preo[0])
 
     def ser_conn(self, comm, baud):
         print("construct : ")
-        # uui = Ui_MainWindow()
-        # # uui.shit()
-        # uui.shit("11.111", "22.22", "33.33")
-        # self.s_un()
-        # s_un()
-        # self.roll.setText('c_roll')
 
-        # self.pitch.setText('c_pitch')
-        # self.yaw.setText('c_yaw')
         try:
-            ser = serial.Serial(comm, baud, timeout=1)
+            # ser = serial.Serial(comm, baud, timeout=1)
+            # Ui_MainWindow.pada(ser)
 
-            print(ser.name)
-            tt = threading.Thread(target=self.read_com, args=(ser,))
+            print(self.ser.name)
+            tt = threading.Thread(target=self.read_com, args=(self.ser,))
 
             # self.read_com(ser)
             tt.start()
+
             print("after")
+            return self.ser
         except:
             print('except')
         finally:
             print('nal')
+
+    def pada(self):
+
+        # print("pada")
+
+        self.ser.write(str("b\00").encode("utf-8"))
+        # print(pad)
 
 from pitch import Widgets
 from compass import Widget,Control
@@ -459,7 +485,7 @@ if __name__ == "__main__":
     z = int(input("enter end value"))
 
     t1 = threading.Thread(target=MainWindow.show())
-    t2 = threading.Thread(target=ui.ser_conn, args=('COM8', 115200))
+    t2 = threading.Thread(target=ui.ser_conn, args=('COM8', 9600))
 
     # t3 = threading.Thread(target=Control, args=('COM8', 115200))
 
